@@ -11,10 +11,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -43,8 +45,12 @@ class MainActivity : ComponentActivity() {
         val openCvOk = OpenCVLoader.initLocal()
         setContent {
             MaterialTheme {
+                // Od Androidu 15 (targetSdk 35) kreslí aplikace pod stavovou i navigační lištu;
+                // safeDrawingPadding odsadí obsah, aby ovládací prvky nebyly překryté.
                 Surface(Modifier.fillMaxSize()) {
-                    if (openCvOk) App() else Text("Knihovnu OpenCV se nepodařilo načíst.", Modifier.padding(16.dp))
+                    Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+                        if (openCvOk) App() else Text("Knihovnu OpenCV se nepodařilo načíst.", Modifier.padding(16.dp))
+                    }
                 }
             }
         }
