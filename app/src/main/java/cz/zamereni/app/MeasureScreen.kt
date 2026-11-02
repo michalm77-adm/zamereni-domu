@@ -4,8 +4,10 @@ import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,6 +79,17 @@ fun MeasureScreen(bitmap: Bitmap, detection: TargetDetector.Result, onBack: () -
         Pt(pts.sumOf { it.x } / pts.size, pts.sumOf { it.y } / pts.size).dist(mid)
     } ?: -1
 
+    fun onTap(o: Offset) {
+        val p = toImage(o)
+        if (p.x < 0 || p.y < 0 || p.x > bitmap.width || p.y > bitmap.height) return
+        val first = pending
+        if (first == null) pending = p
+        else {
+            val mid = Pt((first.x + p.x) / 2, (first.y + p.y) / 2)
+            segments += Segment(first, p, nearestCal(mid)); pending = null
+        }
+    }
+
     val results: List<Measurement?> = segments.map { s ->
         if (s.calIndex in cals.indices) cals[s.calIndex].measure(s.a, s.b) else null
     }
@@ -85,20 +98,24 @@ fun MeasureScreen(bitmap: Bitmap, detection: TargetDetector.Result, onBack: () -
         Box(Modifier.weight(1f).fillMaxWidth()) {
             Canvas(
                 Modifier.fillMaxSize()
+                    // Jedno gesto = buď klepnutí (bod), nebo posun/zoom. Vlastní obsluha, aby se
+                    // klepnutí a posun nepraly o stejné doteky.
                     .pointerInput(Unit) {
-                        detectTransformGestures { _, p, z, _ ->
-                            zoom = (zoom * z).coerceIn(1f, 20f); pan += p
-                        }
-                    }
-                    .pointerInput(cals) {
-                        detectTapGestures { o ->
-                            val p = toImage(o)
-                            val first = pending
-                            if (first == null) pending = p
-                            else {
-                                val mid = Pt((first.x + p.x) / 2, (first.y + p.y) / 2)
-                                segments += Segment(first, p, nearestCal(mid)); pending = null
-                            }
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            var moved = false
+                            do {
+                                val ev = awaitPointerEvent()
+                                val multi = ev.changes.size > 1
+                                val far = (ev.changes.first().position - down.position).getDistance() > viewConfiguration.touchSlop
+                                if (multi || far) moved = true
+                                if (moved) {
+                                    zoom = (zoom * ev.calculateZoom()).coerceIn(1f, 20f)
+                                    pan += ev.calculatePan()
+                                    ev.changes.forEach { it.consume() }
+                                }
+                            } while (ev.changes.any { it.pressed })
+                            if (!moved) onTap(down.position)
                         }
                     },
             ) {
@@ -114,7 +131,7 @@ fun MeasureScreen(bitmap: Bitmap, detection: TargetDetector.Result, onBack: () -
                 }
                 segments.forEach { s ->
                     val c = if (s.calIndex >= 0) targetColors[s.calIndex % 4] else Color.Gray
-                    drawLine(c, toScreen(s.a), toScreen(s.b), strokeWidth = 4f)
+                    drawLine(c, toScreen(s.a), toScreen(s.b), strokeWidth = 6f)
                     marker(toScreen(s.a), c); marker(toScreen(s.b), c)
                 }
                 pending?.let { marker(toScreen(it), Color.Yellow) }
@@ -122,6 +139,15 @@ fun MeasureScreen(bitmap: Bitmap, detection: TargetDetector.Result, onBack: () -
         }
         Column(Modifier.fillMaxWidth().heightIn(max = 260.dp).padding(8.dp)) {
             detection.messages.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+            Text(
+                when {
+                    cals.isEmpty() -> "Bez nalezeného terče nelze měřit."
+                    pending != null -> "Klepněte na KONEC měřeného úseku."
+                    else -> "Klepněte na ZAČÁTEK měřeného úseku (dvěma prsty zoom a posun)."
+                },
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
             LazyColumn(Modifier.weight(1f, fill = false)) {
                 itemsIndexed(segments) { i, s ->
                     val m = results.getOrNull(i)
@@ -162,6 +188,6 @@ fun MeasureScreen(bitmap: Bitmap, detection: TargetDetector.Result, onBack: () -
 }
 
 private fun DrawScope.marker(p: Offset, c: Color) {
-    drawCircle(Color.White, 9f, p)
-    drawCircle(c, 6f, p)
+    drawCircle(Color.White, 18f, p)
+    drawCircle(c, 12f, p)
 }
