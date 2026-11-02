@@ -1,0 +1,162 @@
+{
+  "dictionary": "DICT_4X4_100",
+  "pattern": "OpenCV CharucoBoard, legacyPattern=False",
+  "targets": [
+    {
+      "name": "T1",
+      "format": "1x1m",
+      "page_mm": [
+        1000,
+        1000
+      ],
+      "squares": [
+        5,
+        5
+      ],
+      "square_mm": 180.0,
+      "marker_mm": 135.0,
+      "board_origin_mm": [
+        50,
+        50
+      ],
+      "marker_ids": [
+        0,
+        11
+      ],
+      "inner_corners": [
+        16
+      ],
+      "file": "terc_T1_1x1m.pdf"
+    },
+    {
+      "name": "T2",
+      "format": "1x1m",
+      "page_mm": [
+        1000,
+        1000
+      ],
+      "squares": [
+        5,
+        5
+      ],
+      "square_mm": 180.0,
+      "marker_mm": 135.0,
+      "board_origin_mm": [
+        50,
+        50
+      ],
+      "marker_ids": [
+        12,
+        23
+      ],
+      "inner_corners": [
+        16
+      ],
+      "file": "terc_T2_1x1m.pdf"
+    },
+    {
+      "name": "T3",
+      "format": "1x1m",
+      "page_mm": [
+        1000,
+        1000
+      ],
+      "squares": [
+        5,
+        5
+      ],
+      "square_mm": 180.0,
+      "marker_mm": 135.0,
+      "board_origin_mm": [
+        50,
+        50
+      ],
+      "marker_ids": [
+        24,
+        35
+      ],
+      "inner_corners": [
+        16
+      ],
+      "file": "terc_T3_1x1m.pdf"
+    },
+    {
+      "name": "A1",
+      "format": "A4",
+      "page_mm": [
+        210,
+        297
+      ],
+      "squares": [
+        4,
+        6
+      ],
+      "square_mm": 42.0,
+      "marker_mm": 31.5,
+      "board_origin_mm": [
+        21,
+        15
+      ],
+      "marker_ids": [
+        36,
+        47
+      ],
+      "inner_corners": [
+        15
+      ],
+      "file": "terc_A1_A4.pdf"
+    },
+    {
+      "name": "A2",
+      "format": "A4",
+      "page_mm": [
+        210,
+        297
+      ],
+      "squares": [
+        4,
+        6
+      ],
+      "square_mm": 42.0,
+      "marker_mm": 31.5,
+      "board_origin_mm": [
+        21,
+        15
+      ],
+      "marker_ids": [
+        48,
+        59
+      ],
+      "inner_corners": [
+        15
+      ],
+      "file": "terc_A2_A4.pdf"
+    },
+    {
+      "name": "A3",
+      "format": "A4",
+      "page_mm": [
+        210,
+        297
+      ],
+      "squares": [
+        4,
+        6
+      ],
+      "square_mm": 42.0,
+      "marker_mm": 31.5,
+      "board_origin_mm": [
+        21,
+        15
+      ],
+      "marker_ids": [
+        60,
+        71
+      ],
+      "inner_corners": [
+        15
+      ],
+      "file": "terc_A3_A4.pdf"
+    }
+  ]
+}
