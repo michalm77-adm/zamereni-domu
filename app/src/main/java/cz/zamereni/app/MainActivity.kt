@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import cz.zamereni.core.PlaneCalibration
 import org.opencv.android.OpenCVLoader
 
 class MainActivity : ComponentActivity() {
@@ -64,6 +65,11 @@ private sealed interface Screen {
     data object Camera : Screen
     data object Processing : Screen
     data class Measure(val bitmap: Bitmap, val result: TargetDetector.Result) : Screen
+    data class Facade(
+        val facade: FacadeAnalyzer.Result,
+        val cal: PlaneCalibration,
+        val messages: List<String>,
+    ) : Screen
 }
 
 @Composable
@@ -79,9 +85,13 @@ private fun App() {
             runCatching {
                 withContext(Dispatchers.Default) {
                     val bmp = loadOrientedBitmap(context, uri)
-                    bmp to TargetDetector.detect(bmp)
+                    val res = TargetDetector.detect(bmp)
+                    // Automatické kótování podle terče s nejvíce nalezenými rohy
+                    val cal = res.calibrations.maxByOrNull { it.target.charucoIds.size }
+                    if (cal != null) Screen.Facade(FacadeAnalyzer.analyze(bmp, cal), cal, res.messages)
+                    else Screen.Measure(bmp, res)
                 }
-            }.onSuccess { (bmp, res) -> screen = Screen.Measure(bmp, res) }
+            }.onSuccess { screen = it }
                 .onFailure { error = it.message; screen = Screen.ModeA }
         }
     }
@@ -95,7 +105,7 @@ private fun App() {
 
     BackHandler(enabled = screen != Screen.Wizard) {
         screen = when (screen) {
-            is Screen.Measure, Screen.Camera -> Screen.ModeA
+            is Screen.Measure, is Screen.Facade, Screen.Camera -> Screen.ModeA
             else -> Screen.Wizard
         }
     }
@@ -118,9 +128,10 @@ private fun App() {
         )
         Screen.Camera -> CameraScreen(onCaptured = { process(it) }, onCancel = { screen = Screen.ModeA })
         Screen.Processing -> Column(Modifier.padding(24.dp)) {
-            CircularProgressIndicator(); Text("Hledám terče…")
+            CircularProgressIndicator(); Text("Hledám terč a kótuji fasádu…")
         }
         is Screen.Measure -> MeasureScreen(s.bitmap, s.result, onBack = { screen = Screen.ModeA })
+        is Screen.Facade -> FacadeScreen(s.facade, s.cal, s.messages, onBack = { screen = Screen.ModeA })
     }
 }
 

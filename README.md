@@ -10,7 +10,9 @@ Prototyp **režimu A** (měření v rovině terče) pro Android:
 - průvodce volbou režimu při založení zakázky,
 - focení hlavní kamerou nebo výběr fotky z galerie,
 - detekce ChArUco terčů T1–T3 a A1–A3 (OpenCV),
-- měření úseků klepnutím, výsledek v metrech s odhadem nejistoty a varováním při extrapolaci daleko od terče,
+- **automatické kótování**: snímek se narovná do roviny terče (pohled jako na výkrese), aplikace najde obrys zdi
+  a otvory (okna, dveře) a vynese kóty ve vrstvách *Obrys*, *Otvory*, *Polohy otvorů* a *Ruční*, které lze vypínat,
+- ruční kóty klepnutím na dva body, s odhadem nejistoty a varováním při extrapolaci daleko od terče,
 - sdílení výsledků jako text.
 
 Režim B (fotogrammetrie na PC) zatím není.
@@ -22,7 +24,7 @@ Režim B (fotogrammetrie na PC) zatím není.
 | `core/` | Čisté Kotlin jádro bez Androidu: homografie, definice terčů, měření a nejistota. Testy běží na JVM. |
 | `app/` | Android aplikace (Kotlin, Jetpack Compose, CameraX, OpenCV 4.10). |
 | `terce/` | Tiskové PDF terčů v měřítku 1:1 a `terce_spec.json`. |
-| `tools/` | Python skripty: generování terčů a testovacích dat. |
+| `tools/` | Python skripty: generování terčů a testovacích dat, referenční automatické kótování (`auto_dims.py`) a syntetická fasáda (`synth_facade.py`). |
 
 ## Sestavení
 
